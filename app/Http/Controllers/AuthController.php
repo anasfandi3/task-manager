@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Resources\User\UserResource;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthController extends Controller
 {
@@ -35,8 +37,13 @@ class AuthController extends Controller
         }
 
         $token = $user->createToken('api-token')->plainTextToken;
-
-        return response()->json(['token' => $token]);
+        return response()->json(
+            [
+                'user' => new UserResource($user),
+                'token' => $token,
+                'message' => 'Logged in successfully!',
+            ]
+        );
     }
 
     public function logout(Request $request)
@@ -47,7 +54,21 @@ class AuthController extends Controller
 
         $request->user()->currentAccessToken()->delete();
 
-        return response()->json(['message' => 'Logged out successfully']);
+        return response()->json(['message' => 'Logged out successfully'], 200);
+    }
+    public function validateLogin(Request $request)
+    {
+        $token = $request->bearerToken();
+        $accessToken = PersonalAccessToken::findToken($token);
+        $user = $accessToken->tokenable;
+
+        if (!$accessToken || !$user) {
+            return response()->json(['message' => 'Invalid token'], 404);
+        }
+
+        return response()->json([
+            'user' => $user
+        ], 200);
     }
 }
 
