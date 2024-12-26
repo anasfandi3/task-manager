@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Task\StoreTask;
 use App\Http\Requests\Task\UpdateTask;
+use App\Http\Resources\Task\TaskResource;
 use App\Http\Resources\Task\TasksResource;
 use App\Models\Task;
+use Illuminate\Http\Request;
 
 class TaskController extends Controller
 {
@@ -14,7 +16,7 @@ class TaskController extends Controller
      */
     public function index()
     {
-        $tasks = TasksResource::collection(Task::all());
+        $tasks = TasksResource::collection(auth()->user()->tasks);
         return response()->json(compact('tasks'));
     }
 
@@ -34,7 +36,7 @@ class TaskController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Task created successfully.',
-            'data' => $task
+            'task' => new TaskResource($task)
         ], 201);
     }
 
@@ -49,7 +51,7 @@ class TaskController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Task updated successfully.',
-            'data' => $task
+            'task' => new TaskResource($task)
         ], 200);
     }
 
@@ -63,6 +65,14 @@ class TaskController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Task deleted successfully.'
+        ], 200);
+    }
+    public function saveOrder(Request $request){
+        Task::setNewOrder($request->get('order_array'));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'New order saved successfully!.'
         ], 200);
     }
 }

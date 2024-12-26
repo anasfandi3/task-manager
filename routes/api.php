@@ -12,4 +12,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::post('/validate_login', [AuthController::class, 'validateLogin'])->name('validate_login');
     Route::apiResource('tasks', TaskController::class);
+    Route::post('/tasks/save_order', [TaskController::class, 'saveOrder'])->name('save_order');
 });
